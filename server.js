@@ -38,11 +38,11 @@ const io = new Server(server, {
 // Create a connection pool for the PostgreSQL database
 // The environment variables will be provided by Railway
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  user: process.env.DB_USER, // Using DB_USER as per previous context
+  host: process.env.DB_HOST, // Using DB_HOST as per previous context
+  database: process.env.DB_DATABASE, // Using DB_DATABASE as per previous context
+  password: process.env.DB_PASSWORD, // Using DB_PASSWORD as per previous context
+  port: process.env.DB_PORT, // Using DB_PORT as per previous context
   ssl: {
     rejectUnauthorized: false // This is often needed for Railway's managed Postgres
   }
@@ -209,13 +209,13 @@ io.on('connection', (socket) => {
 
     try {
       let query, values;
-      // --- IMPORTANT: Handle image messages ---
+      // --- IMPORTANT FIX HERE: Conditionally insert content or image_data ---
       if (msg.messageType === 'image' && msg.imageData) {
           query = 'INSERT INTO messages(sender_id, receiver_id, message_type, image_data) VALUES($1, $2, $3, $4) RETURNING *';
           values = [msg.senderId, msg.receiverId, 'image', msg.imageData];
       } else {
-          // Default to text message
-          if (!msg.content) {
+          // Default to text message, ensure content is not null for text messages
+          if (!msg.content) { // This check is still good for ensuring text messages have content
               console.error('Text message missing content');
               return;
           }
@@ -227,8 +227,6 @@ io.on('connection', (socket) => {
       const savedMessage = result.rows[0];
       
       // Emit the message back to all connected clients (or specific rooms for private chat)
-      // For a private chat, you'd ideally use socket.to(receiverSocketId).emit()
-      // For now, we'll emit to all and let the client filter
       io.emit('chat message', savedMessage);
     } catch (err) {
       console.error('Error saving message to database:', err);
