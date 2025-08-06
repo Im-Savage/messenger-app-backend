@@ -150,8 +150,9 @@ app.post('/add-friend', async (req, res) => {
         const friendId = friend.id;
 
         // Check if friendship already exists
+        // --- IMPORTANT FIX HERE: Changed 'user_id' and 'friend_id' to 'user1_id' and 'user2_id' ---
         const friendshipExists = await pool.query(
-            'SELECT * FROM friendships WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
+            'SELECT * FROM friendships WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)',
             [userId, friendId]
         );
 
@@ -160,7 +161,8 @@ app.post('/add-friend', async (req, res) => {
         }
 
         // Create a new friendship record
-        await pool.query('INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2)', [userId, friendId]);
+        // --- IMPORTANT FIX HERE: Changed 'user_id' and 'friend_id' to 'user1_id' and 'user2_id' ---
+        await pool.query('INSERT INTO friendships (user1_id, user2_id) VALUES ($1, $2)', [userId, friendId]);
 
         res.status(200).json({ message: 'Friend added successfully' });
     } catch (err) {
@@ -174,14 +176,15 @@ app.get('/friends/:userId', async (req, res) => {
     const { userId } = req.params;
 
     try {
+        // --- IMPORTANT FIX HERE: Changed 'f.friend_id' and 'f.user_id' to 'f.user1_id' and 'f.user2_id' ---
         const friendsQuery = `
             SELECT 
                 u.id, 
                 u.name,
                 u.username
             FROM users u
-            JOIN friendships f ON u.id = f.friend_id OR u.id = f.user_id
-            WHERE (f.user_id = $1 OR f.friend_id = $1) AND u.id != $1;
+            JOIN friendships f ON (u.id = f.user1_id AND f.user2_id = $1) OR (u.id = f.user2_id AND f.user1_id = $1)
+            WHERE u.id != $1;
         `;
         const result = await pool.query(friendsQuery, [userId]);
 
@@ -201,7 +204,7 @@ app.get('/messages/:user1Id/:user2Id', async (req, res) => {
         const query = `
             SELECT * FROM messages 
             WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)
-            ORDER BY timestamp DESC;
+            ORDER BY created_at ASC;
         `;
         const result = await pool.query(query, [user1Id, user2Id]);
         res.json(result.rows);
