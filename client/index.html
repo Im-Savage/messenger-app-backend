@@ -13,7 +13,8 @@
 
         body {
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f1419 0%, #1a237e 50%, #0d47a1 100%);
+            /* Enhanced background gradient for more vibrancy */
+            background: linear-gradient(135deg, #0A0F14 0%, #1C2A80 50%, #0F51B2 100%);
             background-attachment: fixed;
             min-height: 100vh;
             display: flex;
@@ -30,25 +31,26 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            /* More prominent radial gradients for background effect */
+            background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.25) 0%, transparent 50%);
             z-index: -1;
         }
         
-        /* Main container for the app */
+        /* Main container for the app - increased transparency for better visibility */
         .app-container {
             width: 100%;
             max-width: 1200px;
             height: 95vh;
             display: flex;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.15); /* Increased opacity */
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
             overflow: hidden;
-            color: #fff;
+            color: #fff; /* Main text color */
         }
 
         /* --- Auth Section --- */
@@ -63,79 +65,81 @@
         }
         
         .auth-card {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.1); /* Consistent opacity */
             padding: 40px;
             border-radius: 15px;
             width: 100%;
             max-width: 400px;
             text-align: center;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Stronger shadow */
         }
 
         .auth-card h2 {
             margin-bottom: 20px;
-            font-size: 2rem;
+            font-size: 2.2rem; /* Slightly larger heading */
             color: #4CAF50; /* Green highlight */
-            font-weight: 600;
+            font-weight: 700; /* Bolder */
         }
 
         .auth-card input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
+            padding: 14px; /* More padding */
+            margin-bottom: 18px; /* More margin */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Stronger border */
+            background-color: rgba(0, 0, 0, 0.4); /* Darker background for contrast */
+            border-radius: 10px; /* More rounded */
             color: #fff;
-            font-size: 1rem;
+            font-size: 1.1rem; /* Slightly larger font */
             transition: all 0.3s ease;
         }
 
         .auth-card input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6); /* Brighter placeholder */
         }
 
         .auth-card input:focus {
             outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5);
+            border-color: #66BB6A; /* Brighter green on focus */
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.6); /* More prominent shadow */
         }
 
         .auth-card button {
             width: 100%;
-            padding: 12px;
+            padding: 14px; /* More padding */
             border: none;
-            background-color: #4CAF50;
+            background-color: #4CAF50; /* Primary green */
             color: #fff;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 10px; /* More rounded */
+            font-size: 1.2rem; /* Larger font */
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
             font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow to buttons */
         }
 
         .auth-card button:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
+            background-color: #388E3C; /* Darker green on hover */
+            transform: translateY(-3px); /* More pronounced lift */
         }
         
         .auth-card .toggle-link {
-            margin-top: 15px;
-            color: #fff;
+            margin-top: 20px; /* More space */
+            color: #C0C0C0; /* Brighter text for better contrast */
             cursor: pointer;
-            font-size: 0.9rem;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
+            font-size: 1rem; /* Slightly larger font */
+            opacity: 0.9;
+            transition: opacity 0.3s ease, color 0.3s ease;
         }
 
         .auth-card .toggle-link:hover {
             opacity: 1;
+            color: #FFFFFF; /* Pure white on hover */
             text-decoration: underline;
         }
 
         /* --- Chat Section --- */
         #chatSection {
-            display: none;
+            display: none; /* Will be flexed by JS */
             flex-grow: 1;
             flex-direction: row;
             height: 100%;
@@ -145,61 +149,64 @@
         .sidebar {
             width: 350px;
             min-width: 250px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.1); /* Consistent opacity */
+            border-right: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
             display: flex;
             flex-direction: column;
         }
 
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         
         .sidebar-header h2 {
-            font-size: 1.5rem;
-            font-weight: 500;
+            font-size: 1.6rem; /* Slightly larger */
+            font-weight: 600;
+            color: #E0E0E0;
         }
 
         .user-profile {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px; /* More space */
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 45px; /* Slightly larger */
+            height: 45px; /* Slightly larger */
             border-radius: 50%;
-            background-color: #4CAF50;
+            background-color: #66BB6A; /* Brighter green */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem; /* Larger font */
             font-weight: bold;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
 
         .sidebar-search {
-            padding: 10px 20px;
+            padding: 15px 20px; /* More padding */
             display: flex;
             gap: 10px;
         }
 
         .sidebar-search input {
             flex-grow: 1;
-            padding: 8px 12px;
+            padding: 10px 15px; /* More padding */
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Stronger border */
+            background-color: rgba(0, 0, 0, 0.4); /* Darker background */
             color: #fff;
             font-size: 1rem;
         }
 
         .sidebar-search input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6); /* Brighter placeholder */
         }
 
         .sidebar-search button {
@@ -207,13 +214,14 @@
             color: #fff;
             border: none;
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 10px 15px; /* More padding */
             cursor: pointer;
             transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
 
         .sidebar-search button:hover {
-            background-color: #45a049;
+            background-color: #388E3C; /* Darker green on hover */
         }
 
         .friends-list {
@@ -226,7 +234,7 @@
         }
         
         .friends-list::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.3); /* Brighter scrollbar */
             border-radius: 4px;
         }
 
@@ -237,15 +245,16 @@
             padding: 15px 20px;
             cursor: pointer;
             transition: background-color 0.2s ease;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Stronger border */
         }
         
         .friend-item.active-chat {
-            background-color: rgba(255, 255, 255, 0.15);
+            background-color: rgba(59, 130, 246, 0.3); /* More vibrant active chat background */
+            border-left: 5px solid #3B82F6; /* Added accent border */
         }
 
         .friend-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.15); /* Slightly more prominent hover */
         }
 
         .friend-item .friend-info {
@@ -262,10 +271,11 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
 
         .friend-item button:hover {
-            background-color: #45a049;
+            background-color: #388E3C;
         }
 
         .chat-main {
@@ -276,7 +286,7 @@
 
         .chat-header {
             padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -289,8 +299,9 @@
         }
         
         .chat-header .chat-user-name {
-            font-size: 1.2rem;
-            font-weight: 500;
+            font-size: 1.3rem; /* Slightly larger */
+            font-weight: 600;
+            color: #E0E0E0;
         }
 
         .chat-messages {
@@ -306,7 +317,7 @@
         }
 
         .chat-messages::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.3); /* Brighter scrollbar */
             border-radius: 4px;
         }
 
@@ -317,26 +328,27 @@
         }
 
         .message-content {
-            padding: 10px 15px;
-            border-radius: 15px;
-            max-width: 70%;
+            padding: 12px 18px; /* More padding */
+            border-radius: 20px; /* More rounded */
+            max-width: 75%; /* Slightly wider messages */
             position: relative;
             line-height: 1.5;
             word-wrap: break-word; /* To prevent overflow */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow to messages */
         }
 
         .message-content.self {
-            background-color: #4CAF50;
+            background-color: #4CAF50; /* Primary green */
             color: #fff;
             align-self: flex-end;
-            border-bottom-right-radius: 0;
+            border-bottom-right-radius: 5px; /* Adjusted corner */
         }
 
         .message-content.other {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.2); /* Increased opacity */
             color: #fff;
             align-self: flex-start;
-            border-bottom-left-radius: 0;
+            border-bottom-left-radius: 5px; /* Adjusted corner */
         }
         
         .message-box.self {
@@ -349,8 +361,8 @@
 
 
         .message-info {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem; /* Slightly larger font */
+            color: rgba(255, 255, 255, 0.7); /* Brighter info text */
             margin-top: 5px;
         }
 
@@ -360,74 +372,79 @@
 
         .chat-input {
             padding: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2); /* Stronger border */
             display: flex;
             gap: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.1); /* Consistent opacity */
         }
 
         .chat-input input {
             flex-grow: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.3);
+            padding: 14px; /* More padding */
+            border-radius: 12px; /* More rounded */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Stronger border */
+            background-color: rgba(0, 0, 0, 0.4); /* Darker background */
             color: #fff;
-            font-size: 1rem;
+            font-size: 1.1rem; /* Slightly larger font */
         }
 
         .chat-input input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6); /* Brighter placeholder */
         }
 
         .chat-input button {
             background-color: #4CAF50;
             color: #fff;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 14px 22px; /* More padding */
+            border-radius: 12px; /* More rounded */
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 1.1rem; /* Slightly larger font */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
 
         .chat-input button:hover {
-            background-color: #45a049;
+            background-color: #388E3C; /* Darker green on hover */
+            transform: translateY(-2px);
         }
         
         .logout-button {
-            background-color: #f44336;
+            background-color: #D32F2F; /* Stronger red */
             color: #fff;
             border: none;
             padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
         
         .logout-button:hover {
-            background-color: #d32f2f;
+            background-color: #E57373; /* Lighter red on hover */
         }
 
-        /* Notification Box */
+        /* Notification Box - more prominent */
         #notificationBox {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #333;
-            color: #fff;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            top: 25px; /* Slightly lower */
+            right: 25px; /* Slightly inward */
+            background-color: #212121; /* Darker background */
+            color: #FFEB3B; /* Vibrant yellow text */
+            padding: 18px 30px; /* More padding */
+            border-radius: 12px; /* More rounded */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4); /* Stronger shadow */
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.3s ease;
+            transform: translateY(-10px); /* Slight lift on show */
         }
 
         #notificationBox.show {
             opacity: 1;
             visibility: visible;
+            transform: translateY(0);
         }
 
         /* Responsive Design */
@@ -441,15 +458,17 @@
             
             .sidebar {
                 width: 100%;
-                height: 50vh;
+                height: 40vh; /* Adjusted height for mobile */
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             }
             
             .chat-main {
-                height: 50vh;
+                height: 60vh; /* Adjusted height for mobile */
             }
 
             .friends-list {
-                max-height: 300px;
+                max-height: none; /* Allow full height */
             }
         }
     </style>
@@ -533,7 +552,7 @@
 
     <script>
         // Global state variables
-        const BACKEND_URL = 'https://messenger-app-production-afc6.up.railway.app'; // Replaced placeholder
+        const BACKEND_URL = 'https://messenger-app-production-afc6.up.railway.app'; // Your Railway public URL
         const socket = io(BACKEND_URL);
 
         let currentUser = null;
