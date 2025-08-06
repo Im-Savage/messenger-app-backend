@@ -88,7 +88,8 @@ app.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert the new user into the database
-    const query = 'INSERT INTO users(name, username, password) VALUES($1, $2, $3) RETURNING id, name, username';
+    // --- IMPORTANT FIX HERE: Changed 'password' to 'password_hash' ---
+    const query = 'INSERT INTO users(name, username, password_hash) VALUES($1, $2, $3) RETURNING id, name, username';
     const values = [name, username, hashedPassword];
     const result = await pool.query(query, values);
 
@@ -108,10 +109,11 @@ app.post('/login', async (req, res) => {
   }
 
   try {
+    // --- IMPORTANT FIX HERE: Changed 'password' to 'password_hash' for login comparison ---
     const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = userResult.rows[0];
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user && (await bcrypt.compare(password, user.password_hash))) { // Compare with password_hash
       // Update last_login timestamp
       const updateQuery = 'UPDATE users SET last_login = NOW() WHERE id = $1';
       await pool.query(updateQuery, [user.id]);
