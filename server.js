@@ -1,7 +1,6 @@
 // server.js
 
 // Load environment variables from the .env file
-// In a production environment, these variables are provided by the hosting service.
 require('dotenv').config();
 
 // Import necessary modules
@@ -16,10 +15,9 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // Enable CORS for all routes
-// In a deployed app, you might want to restrict this to your frontend URL
 app.use(cors({
   origin: "*", 
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Added OPTIONS for preflight requests
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 
@@ -36,15 +34,14 @@ const io = new Server(server, {
 });
 
 // Create a connection pool for the PostgreSQL database
-// The environment variables will be provided by Railway
 const pool = new Pool({
-  user: process.env.DB_USER, // Using DB_USER as per previous context
-  host: process.env.DB_HOST, // Using DB_HOST as per previous context
-  database: process.env.DB_DATABASE, // Using DB_DATABASE as per previous context
-  password: process.env.DB_PASSWORD, // Using DB_PASSWORD as per previous context
-  port: process.env.DB_PORT, // Using DB_PORT as per previous context
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
   ssl: {
-    rejectUnauthorized: false // This is often needed for Railway's managed Postgres
+    rejectUnauthorized: false
   }
 });
 
@@ -65,6 +62,7 @@ app.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
     
+    // Ensure 'password_hash' column exists in your 'users' table
     const query = 'INSERT INTO users(username, password_hash, name) VALUES($1, $2, $3) RETURNING id, username, name';
     const values = [username, passwordHash, name || username];
     
@@ -96,6 +94,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
+    // Ensure 'password_hash' column is used for comparison
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (isMatch) {
@@ -116,45 +115,65 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Endpoint for adding a friend
-app.post('/add-friend', async (req, res) => {
-    const { userId, friendUsername } = req.body;
+// MODIFIED: Endpoint to send a friend request instead of directly adding a friend
+app.post('/send-friend-request', async (req, res) => {
+    const { senderId, receiverUsername } = req.body;
 
-    if (!userId || !friendUsername) {
-        return res.status(400).json({ error: 'User ID and friend username are required' });
+    if (!senderId || !receiverUsername) {
+        return res.status(400).json({ error: 'Sender ID and receiver username are required' });
     }
 
     try {
-        const friendQuery = 'SELECT id FROM users WHERE username = $1';
-        const friendResult = await pool.query(friendQuery, [friendUsername]);
-        const friend = friendResult.rows[0];
+        // Find the receiver's ID
+        const receiverQuery = 'SELECT id FROM users WHERE username = $1';
+        const receiverResult = await pool.query(receiverQuery, [receiverUsername]);
+        const receiver = receiverResult.rows[0];
 
-        if (!friend) {
-            return res.status(404).json({ error: 'Friend username not found' });
+        if (!receiver) {
+            return res.status(404).json({ error: 'Recipient username not found' });
         }
 
-        const friendId = friend.id;
+        const receiverId = receiver.id;
 
-        // Check if friendship already exists
-        const checkQuery = 'SELECT * FROM friendships WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)';
-        const checkResult = await pool.query(checkQuery, [userId, friendId]);
-
-        if (checkResult.rows.length > 0) {
-            return res.status(409).json({ error: 'Friendship already exists' });
+        if (senderId === receiverId) {
+            return res.status(400).json({ error: 'You cannot send a friend request to yourself' });
         }
 
-        // Add friendship
-        const insertQuery = 'INSERT INTO friendships (user1_id, user2_id) VALUES ($1, $2) RETURNING *';
-        await pool.query(insertQuery, [userId, friendId]);
+        // Check if a friendship already exists (accepted)
+        const checkFriendshipQuery = 'SELECT * FROM friendships WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)';
+        const friendshipResult = await pool.query(checkFriendshipQuery, [senderId, receiverId]);
+        if (friendshipResult.rows.length > 0) {
+            return res.status(409).json({ error: 'You are already friends with this user' });
+        }
 
-        res.status(201).json({ message: 'Friend added successfully' });
+        // Check if a pending request already exists in either direction
+        const checkRequestQuery = 'SELECT * FROM friend_requests WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1 AND status = \'pending\')';
+        const requestResult = await pool.query(checkRequestQuery, [senderId, receiverId]);
+        if (requestResult.rows.length > 0) {
+            const existingRequest = requestResult.rows[0];
+            if (existingRequest.status === 'pending') {
+                if (existingRequest.sender_id === senderId) {
+                    return res.status(409).json({ error: 'Friend request already sent to this user' });
+                } else {
+                    return res.status(409).json({ error: 'This user has already sent you a friend request. Please check your requests.' });
+                }
+            } else if (existingRequest.status === 'accepted') {
+                return res.status(409).json({ error: 'You are already friends with this user' });
+            }
+        }
+
+        // Insert the new friend request
+        const insertRequestQuery = 'INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES ($1, $2, \'pending\') RETURNING *';
+        await pool.query(insertRequestQuery, [senderId, receiverId]);
+
+        res.status(201).json({ message: 'Friend request sent successfully' });
     } catch (err) {
-        console.error('Error adding friend:', err);
+        console.error('Error sending friend request:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Endpoint to get a user's friends
+// Endpoint to get a user's friends (only accepted ones)
 app.get('/friends/:userId', async (req, res) => {
     const { userId } = req.params;
 
@@ -174,12 +193,101 @@ app.get('/friends/:userId', async (req, res) => {
     }
 });
 
-// New endpoint to get chat messages between two users
+// NEW: Endpoint to get pending friend requests for a user (where current user is the receiver)
+app.get('/friend-requests/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const query = `
+            SELECT fr.id AS request_id, fr.sender_id, u.username AS sender_username, u.name AS sender_name, fr.created_at
+            FROM friend_requests fr
+            JOIN users u ON fr.sender_id = u.id
+            WHERE fr.receiver_id = $1 AND fr.status = 'pending'
+            ORDER BY fr.created_at DESC;
+        `;
+        const result = await pool.query(query, [userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching friend requests:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// NEW: Endpoint to accept a friend request
+app.post('/accept-friend-request', async (req, res) => {
+    const { requestId, userId } = req.body; // userId is the receiver_id
+
+    if (!requestId || !userId) {
+        return res.status(400).json({ error: 'Request ID and User ID are required' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Get the request details
+        const requestQuery = 'SELECT * FROM friend_requests WHERE id = $1 AND receiver_id = $2 AND status = \'pending\'';
+        const requestResult = await client.query(requestQuery, [requestId, userId]);
+        const request = requestResult.rows[0];
+
+        if (!request) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Friend request not found or already processed' });
+        }
+
+        const { sender_id, receiver_id } = request;
+
+        // Update the friend request status to 'accepted'
+        const updateRequestQuery = 'UPDATE friend_requests SET status = \'accepted\', updated_at = NOW() WHERE id = $1 RETURNING *';
+        await client.query(updateRequestQuery, [requestId]);
+
+        // Add both sides of the friendship to the friendships table
+        const insertFriendship1Query = 'INSERT INTO friendships (user1_id, user2_id) VALUES ($1, $2) ON CONFLICT (user1_id, user2_id) DO NOTHING';
+        await client.query(insertFriendship1Query, [sender_id, receiver_id]);
+        
+        const insertFriendship2Query = 'INSERT INTO friendships (user1_id, user2_id) VALUES ($1, $2) ON CONFLICT (user1_id, user2_id) DO NOTHING';
+        await client.query(insertFriendship2Query, [receiver_id, sender_id]);
+
+        await client.query('COMMIT');
+        res.status(200).json({ message: 'Friend request accepted successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error accepting friend request:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    } finally {
+        client.release();
+    }
+});
+
+// NEW: Endpoint to decline a friend request
+app.post('/decline-friend-request', async (req, res) => {
+    const { requestId, userId } = req.body; // userId is the receiver_id
+
+    if (!requestId || !userId) {
+        return res.status(400).json({ error: 'Request ID and User ID are required' });
+    }
+
+    try {
+        const query = 'UPDATE friend_requests SET status = \'declined\', updated_at = NOW() WHERE id = $1 AND receiver_id = $2 AND status = \'pending\' RETURNING *';
+        const result = await pool.query(query, [requestId, userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Friend request not found or already processed' });
+        }
+
+        res.status(200).json({ message: 'Friend request declined successfully' });
+    } catch (err) {
+        console.error('Error declining friend request:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// Endpoint to get chat messages between two users
 app.get('/messages/:userId/:friendId', async (req, res) => {
     const { userId, friendId } = req.params;
     
     try {
-        // --- IMPORTANT: Select message_type and image_data here ---
         const query = `
             SELECT id, sender_id, receiver_id, content, message_type, image_data, created_at FROM messages
             WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)
@@ -209,13 +317,11 @@ io.on('connection', (socket) => {
 
     try {
       let query, values;
-      // --- IMPORTANT FIX HERE: Conditionally insert content or image_data ---
       if (msg.messageType === 'image' && msg.imageData) {
           query = 'INSERT INTO messages(sender_id, receiver_id, message_type, image_data) VALUES($1, $2, $3, $4) RETURNING *';
           values = [msg.senderId, msg.receiverId, 'image', msg.imageData];
       } else {
-          // Default to text message, ensure content is not null for text messages
-          if (!msg.content) { // This check is still good for ensuring text messages have content
+          if (!msg.content) {
               console.error('Text message missing content');
               return;
           }
@@ -226,7 +332,6 @@ io.on('connection', (socket) => {
       const result = await pool.query(query, values);
       const savedMessage = result.rows[0];
       
-      // Emit the message back to all connected clients (or specific rooms for private chat)
       io.emit('chat message', savedMessage);
     } catch (err) {
       console.error('Error saving message to database:', err);
