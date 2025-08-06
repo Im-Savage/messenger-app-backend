@@ -3,9 +3,6 @@
 // Load environment variables from the .env file
 require('dotenv').config();
 
-// --- ADDED FOR DEBUGGING: Log all environment variables ---
-console.log('All Environment Variables:', process.env);
-
 // Import necessary modules
 const express = require('express');
 const http = require('http');
