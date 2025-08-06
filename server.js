@@ -73,6 +73,7 @@ app.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Username already exists' });
     }
     console.error('Error during registration:', err);
+    console.error('Detailed error for /register:', err.stack || err); // Added detailed logging
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -111,6 +112,7 @@ app.post('/login', async (req, res) => {
     }
   } catch (err) {
     console.error('Error during login:', err);
+    console.error('Detailed error for /login:', err.stack || err); // Added detailed logging
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -169,6 +171,7 @@ app.post('/send-friend-request', async (req, res) => {
         res.status(201).json({ message: 'Friend request sent successfully' });
     } catch (err) {
         console.error('Error sending friend request:', err);
+        console.error('Detailed error for /send-friend-request:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -189,6 +192,7 @@ app.get('/friends/:userId', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching friends:', err);
+        console.error('Detailed error for /friends/:userId:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -206,9 +210,10 @@ app.get('/friend-requests/:userId', async (req, res) => {
             ORDER BY fr.created_at DESC;
         `;
         const result = await pool.query(query, [userId]);
-        res.json(result.rows);
+        res.json(result.rows); // This returns an array
     } catch (err) {
         console.error('Error fetching friend requests:', err);
+        console.error('Detailed error for /friend-requests/:userId:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -253,6 +258,7 @@ app.post('/accept-friend-request', async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error accepting friend request:', err);
+        console.error('Detailed error for /accept-friend-request:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     } finally {
         client.release();
@@ -278,6 +284,7 @@ app.post('/decline-friend-request', async (req, res) => {
         res.status(200).json({ message: 'Friend request declined successfully' });
     } catch (err) {
         console.error('Error declining friend request:', err);
+        console.error('Detailed error for /decline-friend-request:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -297,6 +304,7 @@ app.get('/messages/:userId/:friendId', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching messages:', err);
+        console.error('Detailed error for /messages/:userId/:friendId:', err.stack || err); // Added detailed logging
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -335,6 +343,7 @@ io.on('connection', (socket) => {
       io.emit('chat message', savedMessage);
     } catch (err) {
       console.error('Error saving message to database:', err);
+      console.error('Detailed error for chat message socket event:', err.stack || err); // Added detailed logging
     }
   });
 
