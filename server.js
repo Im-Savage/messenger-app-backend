@@ -77,6 +77,34 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// NEW: User registration with a custom ID
+app.post('/register-with-id', async (req, res) => {
+    const { id, username, password, name } = req.body;
+    
+    if (!id || !username || !password) {
+        return res.status(400).json({ error: 'ID, username and password are required' });
+    }
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+        
+        const query = 'INSERT INTO users(id, username, password_hash, name) VALUES($1, $2, $3, $4) RETURNING id, username, name';
+        const values = [id, username, passwordHash, name || username];
+        
+        const result = await pool.query(query, values);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'ID or Username already exists' });
+        }
+        console.error('Error during registration with ID:', err);
+        console.error('Detailed error for /register-with-id:', err.stack || err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 // User login endpoint to return name as well
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -184,8 +212,8 @@ app.get('/friends/:userId', async (req, res) => {
             SELECT 
                 u.id, u.username, u.name 
             FROM users u
-            JOIN friendships f ON (u.id = f.user1_id AND f.user2_id = $1) OR (u.id = f.user2_id AND f.user1_id = $1)
-            WHERE u.id != $1
+            JOIN friendships f ON (u.id = f.user1_id AND f.user2_id = $1::character varying) OR (u.id = f.user2_id AND f.user1_id = $1::character varying)
+            WHERE u.id != $1::character varying
         `;
         const result = await pool.query(query, [userId]);
         res.json(result.rows);
@@ -247,7 +275,7 @@ app.post('/accept-friend-request', async (req, res) => {
 
         // Add both sides of the friendship to the friendships table
         const insertFriendship1Query = 'INSERT INTO friendships (user1_id, user2_id) VALUES ($1, $2) ON CONFLICT (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id)) DO NOTHING';
-        await client.query(insertFriendship11Query, [sender_id, receiver_id]);
+        await client.query(insertFriendship1Query, [sender_id, receiver_id]);
         
         await client.query('COMMIT');
         res.status(200).json({ message: 'Friend request accepted successfully' });
@@ -293,7 +321,7 @@ app.get('/messages/:userId/:friendId', async (req, res) => {
     try {
         const query = `
             SELECT id, sender_id, receiver_id, content, message_type, image_data, created_at FROM messages
-            WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)
+            WHERE (sender_id = $1::character varying AND receiver_id = $2::character varying) OR (sender_id = $2::character varying AND receiver_id = $1::character varying)
             ORDER BY created_at ASC;
         `;
         const result = await pool.query(query, [userId, friendId]);
